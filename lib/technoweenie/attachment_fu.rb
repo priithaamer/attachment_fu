@@ -275,7 +275,7 @@ module Technoweenie # :nodoc:
       def thumbnail_name_for(thumbnail = nil)
         return filename if thumbnail.blank?
         ext = nil
-        basename = filename.gsub /\.\w+$/ do |s|
+        basename = filename.gsub(/\.\w+$/) do |s|
           ext = s; ''
         end
         # ImageScience doesn't create gif thumbnails, only pngs
@@ -410,10 +410,10 @@ module Technoweenie # :nodoc:
           filename.strip.tap do |name|
             # NOTE: File.basename doesn't work right with Windows paths on Unix
             # get only the filename, not the whole path
-            name.gsub! /^.*(\\|\/)/, ''
+            name.gsub!(/^.*(\\|\/)/, '')
 
             # Finally, replace all non alphanumeric, underscore or periods with underscore
-            name.gsub! /[^A-Za-z0-9\.\-]/, '_'
+            name.gsub!(/[^A-Za-z0-9\.\-]/, '_')
           end
         end
 
