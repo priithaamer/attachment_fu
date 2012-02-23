@@ -1,32 +1,31 @@
-attachment-fu
-=============
+# attachment-fu
 
-attachment_fu is a plugin by Rick Olson (aka technoweenie <http://techno-weenie.net>) and is the successor to acts_as_attachment.  To get a basic run-through of its capabilities, check out Mike Clark's tutorial <http://clarkware.com/cgi/blosxom/2007/02/24#FileUploadFu>.
+attachment-fu is a plugin by Rick Olson (aka technoweenie <http://techno-weenie.net>) and is the successor to acts_as_attachment.  To get a basic run-through of its capabilities, check out Mike Clark's tutorial <http://clarkware.com/cgi/blosxom/2007/02/24#FileUploadFu>.
 
 
-attachment_fu functionality
-===========================
+## attachment_fu functionality
 
 attachment_fu facilitates file uploads in Ruby on Rails.  There are a few storage options for the actual file data, but the plugin always at a minimum stores metadata for each file in the database.
 
 There are four storage options for files uploaded through attachment_fu:
-  File system
-  Database file
-  Amazon S3
-  Rackspace (Mosso) Cloud Files
+
+* File system
+* Database file
+* Amazon S3
+* Rackspace (Mosso) Cloud Files
 
 Each method of storage many options associated with it that will be covered in the following section.  Something to note, however, is that the Amazon S3 storage requires you to modify config/amazon_s3.yml, the Rackspace Cloud Files storage requires you to modify config/rackspace_cloudfiles.yml, and the Database file storage requires an extra table.
 
 
-attachment_fu models
-====================
+## attachment_fu models
 
 For all three of these storage options a table of metadata is required.  This table will contain information about the file (hence the 'meta') and its location.  This table has no restrictions on naming, unlike the extra table required for database storage, which must have a table name of db_files (and by convention a model of DbFile).
   
 In the model there are two methods made available by this plugins: has_attachment and validates_as_attachment.
 
-has_attachment(options = {})
-  This method accepts the options in a hash:
+    has_attachment(options = {})
+
+This method accepts the options in a hash:
     :content_type     # Allowed content types.
                       # Allows all by default.  Use :image to allow all standard image types.
     :min_size         # Minimum size allowed.
@@ -56,7 +55,8 @@ has_attachment(options = {})
     :association_options  # attachment_fu automatically defines associations with thumbnails with has_many and belongs_to. If there are any additional options that you want to pass to these methods, then specify them here.
     
 
-  Examples:
+Examples:
+
     has_attachment :max_size => 1.kilobyte
     has_attachment :size => 1.megabyte..2.megabytes
     has_attachment :content_type => 'application/pdf'
@@ -74,7 +74,8 @@ has_attachment(options = {})
     has_attachment :storage => :cloud_files
 
 validates_as_attachment
-  This method prevents files outside of the valid range (:min_size to :max_size, or the :size range) from being saved.  It does not however, halt the upload of such files.  They will be uploaded into memory regardless of size before validation.
+
+This method prevents files outside of the valid range (:min_size to :max_size, or the :size range) from being saved.  It does not however, halt the upload of such files.  They will be uploaded into memory regardless of size before validation.
   
   Example:
     validates_as_attachment
@@ -119,6 +120,7 @@ attachment_fu views
 There are two main views tasks that will be directly affected by attachment_fu: upload forms and displaying uploaded images.
 
 There are two parts of the upload form that differ from typical usage.
+
   1. Include ':multipart => true' in the html options of the form_for tag.
     Example:
       <% form_for(:attachment_metadata, :url => { :action => "create" }, :html => { :multipart => true }) do |form| %>
@@ -129,9 +131,12 @@ There are two parts of the upload form that differ from typical usage.
 
 Displaying uploaded images is made easy by the public_filename method of the ActiveRecord attachment objects using file system, s3, and Cloud Files storage.
 
-public_filename(thumbnail = nil)
-  Returns the public path to the file.  If a thumbnail prefix is specified it will return the public file path to the corresponding thumbnail.
-  Examples:
+    public_filename(thumbnail = nil)
+
+Returns the public path to the file.  If a thumbnail prefix is specified it will return the public file path to the corresponding thumbnail.
+
+Examples:
+  
     attachment_obj.public_filename          #=> /attachments/2/file.jpg
     attachment_obj.public_filename(:thumb)  #=> /attachments/2/file_thumb.jpg
     attachment_obj.public_filename(:small)  #=> /attachments/2/file_small.jpg
@@ -147,47 +152,49 @@ There are two considerations to take into account when using attachment_fu in co
 The first is when the files have no publicly accessible path and need to be downloaded through an action.
 
 Example:
-  def readme
-    send_file '/path/to/readme.txt', :type => 'plain/text', :disposition => 'inline'
-  end
+
+    def readme
+      send_file '/path/to/readme.txt', :type => 'plain/text', :disposition => 'inline'
+    end
   
 See the possible values for send_file for reference.
 
 
 The second is when saving the file when submitted from a form.
 Example in view:
- <%= form.file_field :attachable, :uploaded_data %>
+
+    <%= form.file_field :attachable, :uploaded_data %>
 
 Example in controller:
-  def create
-    @attachable_file = AttachmentMetadataModel.new(params[:attachable])
-    if @attachable_file.save
-      flash[:notice] = 'Attachment was successfully created.'
-      redirect_to attachable_url(@attachable_file)     
-    else
-      render :action => :new
-    end
-  end
 
-attachement_fu scripting
-====================================
+    def create
+      @attachable_file = AttachmentMetadataModel.new(params[:attachable])
+      if @attachable_file.save
+        flash[:notice] = 'Attachment was successfully created.'
+        redirect_to attachable_url(@attachable_file)     
+      else
+        render :action => :new
+      end
+    end
+
+## attachement_fu scripting
 
 You may wish to import a large number of images or attachments. 
 The following example shows how to upload a file from a script. 
 
-#!/usr/bin/env ./script/runner
-
-# required to use ActionController::TestUploadedFile 
-require 'action_controller'
-require 'action_controller/test_process.rb'
-
-path = "./public/images/x.jpg"
-
-# mimetype is a string like "image/jpeg". One way to get the mimetype for a given file on a UNIX system
-# mimetype = `file -ib #{path}`.gsub(/\n/,"")
-
-mimetype = "image/jpeg"
-
-# This will "upload" the file at path and create the new model.
-@attachable = AttachmentMetadataModel.new(:uploaded_data => ActionController::TestUploadedFile.new(path, mimetype))
-@attachable.save
+    #!/usr/bin/env ./script/runner
+    
+    # required to use ActionController::TestUploadedFile 
+    require 'action_controller'
+    require 'action_controller/test_process.rb'
+    
+    path = "./public/images/x.jpg"
+    
+    # mimetype is a string like "image/jpeg". One way to get the mimetype for a given file on a UNIX system
+    # mimetype = `file -ib #{path}`.gsub(/\n/,"")
+    
+    mimetype = "image/jpeg"
+    
+    # This will "upload" the file at path and create the new model.
+    @attachable = AttachmentMetadataModel.new(:uploaded_data => ActionController::TestUploadedFile.new(path, mimetype))
+    @attachable.save
