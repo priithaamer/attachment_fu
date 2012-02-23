@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary      = 'Attachment-fu for rails3'
   s.description  = 'attachment-fu for rails3.  You know what it is.'
   
-  s.files        = Dir.glob("{lib,rails,vendor}/**/*") + %w( CHANGELOG LICENSE README amazon_s3.yml.tpl rackspace_cloudfiles.yml.tpl )
+  s.files        = Dir.glob("{lib,rails,vendor}/**/*") + %w( CHANGELOG LICENSE README.markdown amazon_s3.yml.tpl rackspace_cloudfiles.yml.tpl )
   s.require_path = 'lib'
   end
 
